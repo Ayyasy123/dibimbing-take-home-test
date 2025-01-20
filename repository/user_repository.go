@@ -11,7 +11,8 @@ type UserRepository interface {
 	FindUserByID(id int) (*entity.User, error)
 	FindAllUsers() ([]entity.User, error)
 	UpdateUser(user *entity.User) error
-	DeleteUser(user *entity.User) error
+	DeleteUser(id int) error
+	IsEmailExists(email string) (bool, error)
 }
 
 type userRepository struct {
@@ -48,12 +49,12 @@ func (r *userRepository) UpdateUser(user *entity.User) error {
 	return r.db.Save(user).Error
 }
 
-func (r *userRepository) DeleteUser(user *entity.User) error {
-	return r.db.Delete(user).Error
+func (r *userRepository) DeleteUser(id int) error {
+	return r.db.Delete(&entity.User{}, id).Error
 }
 
-func (r *userRepository) IsEmailExists(email string) bool {
+func (r *userRepository) IsEmailExists(email string) (bool, error) {
 	var count int64
 	r.db.Model(&entity.User{}).Where("email = ?", email).Count(&count)
-	return count > 0
+	return count > 0, nil
 }
