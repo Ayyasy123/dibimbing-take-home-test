@@ -6,7 +6,7 @@ import (
 )
 
 type UserRepository interface {
-	RegisterUser(user *entity.User) error
+	CreateUser(user *entity.User) error
 	FindUserByEmail(email string) (*entity.User, error)
 	FindUserByID(id int) (*entity.User, error)
 	FindAllUsers() ([]entity.User, error)
@@ -19,7 +19,7 @@ type userRepository struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) *userRepository {
+func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{db: db}
 }
 
