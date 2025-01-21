@@ -10,7 +10,7 @@ type TicketRepository interface {
 	FindTicketByID(id int) (*entity.Ticket, error)
 	FindAllTickets() ([]entity.Ticket, error)
 	UpdateTicket(ticket *entity.Ticket) error
-	DeleteTicket(ticket *entity.Ticket) error
+	DeleteTicket(id int) error
 }
 
 type ticketRepository struct {
@@ -41,6 +41,6 @@ func (r *ticketRepository) UpdateTicket(ticket *entity.Ticket) error {
 	return r.db.Save(ticket).Error
 }
 
-func (r *ticketRepository) DeleteTicket(ticket *entity.Ticket) error {
-	return r.db.Delete(ticket).Error
+func (r *ticketRepository) DeleteTicket(id int) error {
+	return r.db.Delete(&entity.Ticket{}, id).Error
 }
