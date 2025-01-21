@@ -10,7 +10,7 @@ type EventRepository interface {
 	FindEventByID(id int) (*entity.Event, error)
 	FindAllEvents() ([]entity.Event, error)
 	UpdateEvent(event *entity.Event) error
-	DeleteEvent(event *entity.Event) error
+	DeleteEvent(id int) error
 }
 
 type eventRepository struct {
@@ -41,6 +41,6 @@ func (r *eventRepository) UpdateEvent(event *entity.Event) error {
 	return r.db.Save(event).Error
 }
 
-func (r *eventRepository) DeleteEvent(event *entity.Event) error {
-	return r.db.Delete(event).Error
+func (r *eventRepository) DeleteEvent(id int) error {
+	return r.db.Delete(&entity.Event{}, id).Error
 }
