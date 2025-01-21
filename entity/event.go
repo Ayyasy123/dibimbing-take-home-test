@@ -24,6 +24,7 @@ type CreateEventReq struct {
 }
 
 type UpdateEventReq struct {
+	ID          int    `json:"id" validate:"required"`
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description" validate:"required"`
 	Location    string `json:"location" validate:"required"`

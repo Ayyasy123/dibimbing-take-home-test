@@ -24,6 +24,14 @@ type LoginReq struct {
 	Password string `json:"password" validate:"required"`
 }
 
+type UpdateUserReq struct {
+	ID       int    `json:"id" validate:"required"`
+	Name     string `json:"name" validate:"required"`
+	Email    string `json:"email" validate:"required"`
+	Password string `json:"password" validate:"required"`
+	Role     string `json:"role" validate:"required"`
+}
+
 type UserRes struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
