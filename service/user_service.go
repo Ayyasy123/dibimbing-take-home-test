@@ -9,6 +9,12 @@ import (
 )
 
 type UserService interface {
+	RegisterUser(req *entity.RegisterReq) (*entity.UserRes, error)
+	LoginUser(req *entity.LoginReq) (*entity.UserRes, error)
+	FindUserByID(id int) (*entity.UserRes, error)
+	FindAllUsers() ([]entity.UserRes, error)
+	UpdateUser(req *entity.UpdateUserReq) error
+	DeleteUser(id int) error
 }
 
 type userService struct {
@@ -43,7 +49,7 @@ func (s *userService) RegisterUser(req *entity.RegisterReq) (*entity.UserRes, er
 		Role:     "user",
 	}
 
-	err = s.userRepository.RegisterUser(user)
+	err = s.userRepository.CreateUser(user)
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +128,19 @@ func (s *userService) FindAllUsers() ([]entity.UserRes, error) {
 	return userRes, nil
 }
 
-func (s *userService) UpdateUser(user *entity.User) error {
+func (s *userService) UpdateUser(req *entity.UpdateUserReq) error {
+	user, err := s.userRepository.FindUserByID(req.ID)
+	if err != nil {
+		return err
+	}
+
+	user.Name = req.Name
+	user.Email = req.Email
+	user.Password = req.Password
+	user.Role = req.Role
+
 	return s.userRepository.UpdateUser(user)
+
 }
 
 func (s *userService) DeleteUser(id int) error {
