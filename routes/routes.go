@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/Ayyasy123/dibimbing-take-home-test/controller"
+	"github.com/Ayyasy123/dibimbing-take-home-test/middleware"
 	"github.com/Ayyasy123/dibimbing-take-home-test/repository"
 	"github.com/Ayyasy123/dibimbing-take-home-test/service"
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,7 @@ func SetupUserRoutes(db *gorm.DB, r *gin.Engine) {
 	r.POST("/login", userController.LoginUser)
 
 	userRoutes := r.Group("/users")
+	userRoutes.Use(middleware.JWTAuth())
 	{
 		userRoutes.GET("", userController.FindAllUsers)
 		userRoutes.GET("/:id", userController.FindUserByID)
@@ -31,6 +33,7 @@ func SetupEventRoutes(db *gorm.DB, r *gin.Engine) {
 	eventController := controller.NewEventController(eventService)
 
 	eventRoutes := r.Group("/events")
+	eventRoutes.Use(middleware.JWTAuth())
 	{
 		eventRoutes.POST("", eventController.CreateEvent)
 		eventRoutes.GET("", eventController.FindAllEvents)
@@ -46,6 +49,7 @@ func SetupTicketRoutes(db *gorm.DB, r *gin.Engine) {
 	ticketController := controller.NewTicketController(ticketService)
 
 	ticketRoutes := r.Group("/tickets")
+	ticketRoutes.Use(middleware.JWTAuth())
 	{
 		ticketRoutes.POST("", ticketController.CreateTicket)
 		ticketRoutes.GET("", ticketController.FindAllTickets)
