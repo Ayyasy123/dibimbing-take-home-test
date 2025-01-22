@@ -20,7 +20,6 @@ type CreateTicketReq struct {
 }
 
 type UpdateTicketReq struct {
-	ID     int    `json:"id" validate:"required"`
 	Status string `json:"status" validate:"required"`
 }
 
