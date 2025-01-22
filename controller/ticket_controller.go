@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
+	"github.com/Ayyasy123/dibimbing-take-home-test/response"
 	"github.com/Ayyasy123/dibimbing-take-home-test/service"
 	"github.com/gin-gonic/gin"
 )
@@ -20,73 +21,73 @@ func NewTicketController(ticketService service.TicketService) *TicketController 
 func (c *TicketController) CreateTicket(ctx *gin.Context) {
 	var req entity.CreateTicketReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
 	ticketRes, err := c.ticketService.CreateTicket(&req)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to create ticket", err)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"data": ticketRes})
+	response.SendSuccessResponse(ctx, http.StatusCreated, "Ticket created successfully", ticketRes)
 }
 
 func (c *TicketController) FindTicketByID(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid ticket ID", err)
 		return
 	}
 
 	ticketRes, err := c.ticketService.FindTicketByID(id)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve ticket", err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": ticketRes})
+	response.SendSuccessResponse(ctx, http.StatusOK, "Ticket retrieved successfully", ticketRes)
 }
 
 func (c *TicketController) FindAllTickets(ctx *gin.Context) {
 	ticketsRes, err := c.ticketService.FindAllTickets()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve tickets", err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": ticketsRes})
+	response.SendSuccessResponse(ctx, http.StatusOK, "Tickets retrieved successfully", ticketsRes)
 }
 
 func (c *TicketController) UpdateTicket(ctx *gin.Context) {
 	var req entity.UpdateTicketReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
 	err := c.ticketService.UpdateTicket(&req)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to update ticket", err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Ticket updated successfully"})
+	response.SendSuccessResponse(ctx, http.StatusOK, "Ticket updated successfully", nil)
 }
 
 func (c *TicketController) DeleteTicket(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid ticket ID", err)
 		return
 	}
 
 	err = c.ticketService.DeleteTicket(id)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to delete ticket", err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Ticket deleted successfully"})
+	response.SendSuccessResponse(ctx, http.StatusOK, "Ticket deleted successfully", nil)
 }
