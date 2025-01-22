@@ -9,7 +9,7 @@ type TicketRepository interface {
 	CreateTicket(ticket *entity.Ticket) error
 	FindTicketByID(id int) (*entity.Ticket, error)
 	FindAllTickets() ([]entity.Ticket, error)
-	UpdateTicket(ticket *entity.Ticket) error
+	UpdateTicket(id int, ticket *entity.Ticket) error
 	DeleteTicket(id int) error
 }
 
@@ -37,8 +37,12 @@ func (r *ticketRepository) FindAllTickets() ([]entity.Ticket, error) {
 	return tickets, err
 }
 
-func (r *ticketRepository) UpdateTicket(ticket *entity.Ticket) error {
-	return r.db.Save(ticket).Error
+func (r *ticketRepository) UpdateTicket(id int, ticket *entity.Ticket) error {
+	result := r.db.Model(&entity.Ticket{}).Where("id = ?", id).Updates(ticket)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
 
 func (r *ticketRepository) DeleteTicket(id int) error {

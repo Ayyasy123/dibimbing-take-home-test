@@ -61,13 +61,19 @@ func (c *TicketController) FindAllTickets(ctx *gin.Context) {
 }
 
 func (c *TicketController) UpdateTicket(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid ticket ID", err)
+		return
+	}
+
 	var req entity.UpdateTicketReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
-	err := c.ticketService.UpdateTicket(&req)
+	err = c.ticketService.UpdateTicket(id, &req)
 	if err != nil {
 		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to update ticket", err)
 		return

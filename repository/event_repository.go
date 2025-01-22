@@ -9,7 +9,7 @@ type EventRepository interface {
 	CreateEvent(event *entity.Event) error
 	FindEventByID(id int) (*entity.Event, error)
 	FindAllEvents() ([]entity.Event, error)
-	UpdateEvent(event *entity.Event) error
+	UpdateEvent(id int, event *entity.Event) error
 	DeleteEvent(id int) error
 }
 
@@ -37,8 +37,12 @@ func (r *eventRepository) FindAllEvents() ([]entity.Event, error) {
 	return events, err
 }
 
-func (r *eventRepository) UpdateEvent(event *entity.Event) error {
-	return r.db.Save(event).Error
+func (r *eventRepository) UpdateEvent(id int, event *entity.Event) error {
+	result := r.db.Model(&entity.Event{}).Where("id = ?", id).Updates(event)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
 
 func (r *eventRepository) DeleteEvent(id int) error {

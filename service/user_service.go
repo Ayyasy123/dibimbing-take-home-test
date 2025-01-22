@@ -13,7 +13,7 @@ type UserService interface {
 	LoginUser(req *entity.LoginReq) (*entity.UserRes, error)
 	FindUserByID(id int) (*entity.UserRes, error)
 	FindAllUsers() ([]entity.UserRes, error)
-	UpdateUser(req *entity.UpdateUserReq) error
+	UpdateUser(id int, req *entity.UpdateUserReq) error
 	DeleteUser(id int) error
 }
 
@@ -128,18 +128,33 @@ func (s *userService) FindAllUsers() ([]entity.UserRes, error) {
 	return userRes, nil
 }
 
-func (s *userService) UpdateUser(req *entity.UpdateUserReq) error {
-	user, err := s.userRepository.FindUserByID(req.ID)
+func (s *userService) UpdateUser(id int, req *entity.UpdateUserReq) error {
+	existingUser, err := s.userRepository.FindUserByID(id)
 	if err != nil {
 		return err
 	}
 
-	user.Name = req.Name
-	user.Email = req.Email
-	user.Password = req.Password
-	user.Role = req.Role
+	if req.Name != "" {
+		existingUser.Name = req.Name
+	}
 
-	return s.userRepository.UpdateUser(user)
+	if req.Email != "" {
+		existingUser.Email = req.Email
+	}
+
+	if req.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		existingUser.Password = string(hashedPassword)
+	}
+
+	if req.Role != "" {
+		existingUser.Role = req.Role
+	}
+
+	return s.userRepository.UpdateUser(id, existingUser)
 
 }
 

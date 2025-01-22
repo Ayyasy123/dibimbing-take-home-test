@@ -10,7 +10,7 @@ type UserRepository interface {
 	FindUserByEmail(email string) (*entity.User, error)
 	FindUserByID(id int) (*entity.User, error)
 	FindAllUsers() ([]entity.User, error)
-	UpdateUser(user *entity.User) error
+	UpdateUser(id int, user *entity.User) error
 	DeleteUser(id int) error
 	IsEmailExists(email string) (bool, error)
 }
@@ -45,8 +45,12 @@ func (r *userRepository) FindAllUsers() ([]entity.User, error) {
 	return users, err
 }
 
-func (r *userRepository) UpdateUser(user *entity.User) error {
-	return r.db.Save(user).Error
+func (r *userRepository) UpdateUser(id int, user *entity.User) error {
+	result := r.db.Model(&entity.User{}).Where("id = ?", id).Updates(user)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
 
 func (r *userRepository) DeleteUser(id int) error {

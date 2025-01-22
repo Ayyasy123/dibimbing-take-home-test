@@ -61,13 +61,19 @@ func (c *EventController) FindAllEvents(ctx *gin.Context) {
 }
 
 func (c *EventController) UpdateEvent(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid event ID", err)
+		return
+	}
+
 	var req entity.UpdateEventReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
-	err := c.eventService.UpdateEvent(&req)
+	err = c.eventService.UpdateEvent(id, &req)
 	if err != nil {
 		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to update event", err)
 		return

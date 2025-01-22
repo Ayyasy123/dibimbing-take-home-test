@@ -9,7 +9,7 @@ type EventService interface {
 	CreateEvent(req *entity.CreateEventReq) (*entity.Event, error)
 	FindEventByID(id int) (*entity.Event, error)
 	FindAllEvents() ([]entity.Event, error)
-	UpdateEvent(req *entity.UpdateEventReq) error
+	UpdateEvent(id int, req *entity.UpdateEventReq) error
 	DeleteEvent(id int) error
 }
 
@@ -43,20 +43,33 @@ func (s *eventService) FindAllEvents() ([]entity.Event, error) {
 	return s.eventRepository.FindAllEvents()
 }
 
-func (s *eventService) UpdateEvent(req *entity.UpdateEventReq) error {
-
-	service, err := s.eventRepository.FindEventByID(req.ID)
+func (s *eventService) UpdateEvent(id int, req *entity.UpdateEventReq) error {
+	existingEvent, err := s.eventRepository.FindEventByID(id)
 	if err != nil {
 		return err
 	}
-	service.Name = req.Name
-	service.Description = req.Description
-	service.Location = req.Location
-	service.Capacity = req.Capacity
-	service.Price = req.Price
 
-	return s.eventRepository.UpdateEvent(service)
+	if req.Name != "" {
+		existingEvent.Name = req.Name
+	}
 
+	if req.Description != "" {
+		existingEvent.Description = req.Description
+	}
+
+	if req.Location != "" {
+		existingEvent.Location = req.Location
+	}
+
+	if req.Capacity != 0 {
+		existingEvent.Capacity = req.Capacity
+	}
+
+	if req.Price != 0 {
+		existingEvent.Price = req.Price
+	}
+
+	return s.eventRepository.UpdateEvent(id, existingEvent)
 }
 
 func (s *eventService) DeleteEvent(id int) error {

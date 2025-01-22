@@ -77,13 +77,19 @@ func (c *UserController) FindAllUsers(ctx *gin.Context) {
 }
 
 func (c *UserController) UpdateUser(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid user ID", err)
+		return
+	}
+
 	var req entity.UpdateUserReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
-	err := c.userService.UpdateUser(&req)
+	err = c.userService.UpdateUser(id, &req)
 	if err != nil {
 		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to update user", err)
 		return
