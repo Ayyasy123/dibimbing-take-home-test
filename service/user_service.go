@@ -5,6 +5,7 @@ import (
 
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
 	"github.com/Ayyasy123/dibimbing-take-home-test/repository"
+	"github.com/Ayyasy123/dibimbing-take-home-test/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -77,6 +78,12 @@ func (s *userService) LoginUser(req *entity.LoginReq) (*entity.UserRes, error) {
 		return nil, err
 	}
 
+	// Generate token JWT
+	token, err := utils.GenerateJWT(user.ID, user.Role)
+	if err != nil {
+		return nil, errors.New("failed to generate token")
+	}
+
 	userRes := &entity.UserRes{
 		ID:        user.ID,
 		Name:      user.Name,
@@ -84,6 +91,7 @@ func (s *userService) LoginUser(req *entity.LoginReq) (*entity.UserRes, error) {
 		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
+		Token:     token, // Tambahkan field Token ke UserRes
 	}
 
 	return userRes, nil
