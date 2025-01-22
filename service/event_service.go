@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
 	"github.com/Ayyasy123/dibimbing-take-home-test/repository"
 )
@@ -22,6 +24,15 @@ func NewEventService(eventRepository repository.EventRepository) EventService {
 }
 
 func (s *eventService) CreateEvent(req *entity.CreateEventReq) (*entity.Event, error) {
+	existingEventName, err := s.eventRepository.IsEventNameExists(req.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if existingEventName {
+		return nil, errors.New("event name already exists")
+	}
+
 	event := &entity.Event{
 		Name:        req.Name,
 		Description: req.Description,
@@ -31,7 +42,7 @@ func (s *eventService) CreateEvent(req *entity.CreateEventReq) (*entity.Event, e
 		Status:      "active",
 	}
 
-	err := s.eventRepository.CreateEvent(event)
+	err = s.eventRepository.CreateEvent(event)
 	return event, err
 }
 
