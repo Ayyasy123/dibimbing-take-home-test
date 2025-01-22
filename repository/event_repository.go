@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"strings"
+
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
 	"gorm.io/gorm"
 )
@@ -11,6 +13,7 @@ type EventRepository interface {
 	FindAllEvents() ([]entity.Event, error)
 	UpdateEvent(id int, event *entity.Event) error
 	DeleteEvent(id int) error
+	IsEventNameExists(name string) (bool, error)
 }
 
 type eventRepository struct {
@@ -47,4 +50,10 @@ func (r *eventRepository) UpdateEvent(id int, event *entity.Event) error {
 
 func (r *eventRepository) DeleteEvent(id int) error {
 	return r.db.Delete(&entity.Event{}, id).Error
+}
+
+func (r *eventRepository) IsEventNameExists(name string) (bool, error) {
+	var count int64
+	r.db.Model(&entity.Event{}).Where("name = ?", strings.ToLower(name)).Count(&count)
+	return count > 0, nil
 }
