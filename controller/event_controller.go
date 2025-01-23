@@ -7,6 +7,7 @@ import (
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
 	"github.com/Ayyasy123/dibimbing-take-home-test/response"
 	"github.com/Ayyasy123/dibimbing-take-home-test/service"
+	"github.com/Ayyasy123/dibimbing-take-home-test/validator"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,6 +22,12 @@ func NewEventController(eventService service.EventService) *EventController {
 func (c *EventController) CreateEvent(ctx *gin.Context) {
 	var req entity.CreateEventReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	// Perform validation
+	if err := validator.ValidateStruct(&req); err != nil {
 		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
@@ -69,6 +76,12 @@ func (c *EventController) UpdateEvent(ctx *gin.Context) {
 
 	var req entity.UpdateEventReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	// Perform validation
+	if err := validator.ValidateStruct(&req); err != nil {
 		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
