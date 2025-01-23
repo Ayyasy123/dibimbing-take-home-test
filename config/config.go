@@ -21,7 +21,7 @@ func ConnectDatabase() {
 	// buat connection
 	// dsn := dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
 	// Konfigurasi koneksi database with xampp
-	dsn := "root:@tcp(127.0.0.1:3306)/capstone?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:@tcp(127.0.0.1:3306)/dibimbing_takehometest?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to database", err)
