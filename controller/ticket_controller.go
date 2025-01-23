@@ -97,3 +97,26 @@ func (c *TicketController) DeleteTicket(ctx *gin.Context) {
 
 	response.SendSuccessResponse(ctx, http.StatusOK, "Ticket deleted successfully", nil)
 }
+
+func (c *TicketController) FindAllTicketsByUserID(ctx *gin.Context) {
+	// ambil user id dari token
+	userId, exists := ctx.Get("user_id")
+	if !exists {
+		response.SendErrorResponse(ctx, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
+
+	userIdInt, ok := userId.(int)
+	if !ok {
+		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to parse user ID", nil)
+		return
+	}
+
+	ticketsRes, err := c.ticketService.FindAllTicketsByUserID(userIdInt)
+	if err != nil {
+		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve tickets", err)
+		return
+	}
+
+	response.SendSuccessResponse(ctx, http.StatusOK, "Tickets retrieved successfully", ticketsRes)
+}

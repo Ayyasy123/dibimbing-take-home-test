@@ -11,6 +11,7 @@ type TicketRepository interface {
 	FindAllTickets() ([]entity.Ticket, error)
 	UpdateTicket(id int, ticket *entity.Ticket) error
 	DeleteTicket(id int) error
+	FindAllTicketsByUserID(userID int) ([]entity.Ticket, error)
 }
 
 type ticketRepository struct {
@@ -47,4 +48,10 @@ func (r *ticketRepository) UpdateTicket(id int, ticket *entity.Ticket) error {
 
 func (r *ticketRepository) DeleteTicket(id int) error {
 	return r.db.Delete(&entity.Ticket{}, id).Error
+}
+
+func (r *ticketRepository) FindAllTicketsByUserID(userID int) ([]entity.Ticket, error) {
+	var tickets []entity.Ticket
+	err := r.db.Where("user_id = ?", userID).Find(&tickets).Error
+	return tickets, err
 }
