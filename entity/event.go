@@ -19,16 +19,16 @@ type CreateEventReq struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description" validate:"required"`
 	Location    string `json:"location" validate:"required"`
-	Capacity    int    `json:"capacity" validate:"required"`
-	Price       int    `json:"price" validate:"required"`
+	Capacity    int    `json:"capacity" validate:"required,gte=0"`
+	Price       int    `json:"price" validate:"required,gte=0"`
 }
 
 type UpdateEventReq struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description" validate:"required"`
 	Location    string `json:"location" validate:"required"`
-	Capacity    int    `json:"capacity" validate:"required"`
-	Price       int    `json:"price" validate:"required"`
+	Capacity    int    `json:"capacity" validate:"required,gte=0"`
+	Price       int    `json:"price" validate:"required,gte=0"`
 }
 
 type EventRes struct {
