@@ -16,6 +16,7 @@ func SetupUserRoutes(db *gorm.DB, r *gin.Engine) {
 
 	r.POST("/register", userController.RegisterUser)
 	r.POST("/login", userController.LoginUser)
+	r.POST("/register/admin", userController.RegisterAsAdmin)
 
 	userRoutes := r.Group("/users")
 	userRoutes.Use(middleware.JWTAuth())

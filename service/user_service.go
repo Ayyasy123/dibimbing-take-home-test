@@ -16,6 +16,7 @@ type UserService interface {
 	FindAllUsers() ([]entity.UserRes, error)
 	UpdateUser(id int, req *entity.UpdateUserReq) error
 	DeleteUser(id int) error
+	RegisterAsAdmin(req *entity.RegisterReq) (*entity.UserRes, error)
 }
 
 type userService struct {
@@ -168,4 +169,44 @@ func (s *userService) UpdateUser(id int, req *entity.UpdateUserReq) error {
 
 func (s *userService) DeleteUser(id int) error {
 	return s.userRepository.DeleteUser(id)
+}
+
+func (s *userService) RegisterAsAdmin(req *entity.RegisterReq) (*entity.UserRes, error) {
+	exist, err := s.userRepository.IsEmailExists(req.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if exist {
+		return nil, errors.New("email already registered")
+	}
+
+	// hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	user := &entity.User{
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: string(hashedPassword),
+		Role:     "admin",
+	}
+
+	err = s.userRepository.CreateUser(user)
+	if err != nil {
+		return nil, err
+	}
+
+	userRes := &entity.UserRes{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+
+	return userRes, nil
 }

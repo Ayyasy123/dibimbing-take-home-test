@@ -113,3 +113,19 @@ func (c *UserController) DeleteUser(ctx *gin.Context) {
 
 	response.SendSuccessResponse(ctx, http.StatusOK, "User deleted successfully", nil)
 }
+
+func (c *UserController) RegisterAsAdmin(ctx *gin.Context) {
+	var req entity.RegisterReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	admin, err := c.userService.RegisterAsAdmin(&req)
+	if err != nil {
+		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to register as admin", err)
+		return
+	}
+
+	response.SendSuccessResponse(ctx, http.StatusCreated, "Admin registered successfully", admin)
+}
