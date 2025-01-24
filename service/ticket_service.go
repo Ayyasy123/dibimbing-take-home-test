@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"time"
 
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
@@ -16,6 +17,7 @@ type TicketService interface {
 	FindAllTicketsByUserID(userID int) ([]entity.TicketRes, error)
 	GetTicketReport(startDate, endDate time.Time) (*entity.TicketReport, error)
 	GetTicketsSoldPerEvent(startDate, endDate time.Time, eventID int) ([]entity.TicketsSoldPerEvent, error)
+	CancelTicket(id int) error
 }
 
 type ticketService struct {
@@ -169,4 +171,20 @@ func (s *ticketService) GetTicketReport(startDate, endDate time.Time) (*entity.T
 
 func (s *ticketService) GetTicketsSoldPerEvent(startDate, endDate time.Time, eventID int) ([]entity.TicketsSoldPerEvent, error) {
 	return s.ticketRepository.GetTicketsSoldPerEvent(startDate, endDate, eventID)
+}
+
+func (s *ticketService) CancelTicket(id int) error {
+	// Cek apakah tiket ada
+	ticket, err := s.ticketRepository.FindTicketByID(id)
+	if err != nil {
+		return err
+	}
+
+	// Validasi: Tiket hanya bisa dibatalkan jika statusnya "Dibeli"
+	if ticket.Status != "Dibeli" {
+		return errors.New("ticket cannot be cancelled because it is not in 'Dibeli' status")
+	}
+
+	// Update status tiket menjadi "cancelled"
+	return s.ticketRepository.UpdateTicketStatus(id, "cancelled")
 }

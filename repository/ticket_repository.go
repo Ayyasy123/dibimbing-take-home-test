@@ -20,6 +20,7 @@ type TicketRepository interface {
 	GetTotalRevenue(startDate, endDate time.Time) (int, error)
 	GetTicketStatusDistribution(status string, startDate, endDate time.Time) (int, int, error)
 	GetTicketsSoldPerEvent(startDate, endDate time.Time, eventID int) ([]entity.TicketsSoldPerEvent, error)
+	UpdateTicketStatus(id int, status string) error
 }
 
 type ticketRepository struct {
@@ -193,4 +194,9 @@ func (r *ticketRepository) GetTicketsSoldPerEvent(startDate, endDate time.Time, 
 	}
 
 	return results, nil
+}
+
+func (r *ticketRepository) UpdateTicketStatus(id int, status string) error {
+	return r.db.Model(&entity.Ticket{}).Where("id = ?", id).
+		Update("status", status).Error
 }

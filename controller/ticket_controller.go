@@ -211,3 +211,21 @@ func (c *TicketController) GetTicketsSoldPerEvent(ctx *gin.Context) {
 
 	helper.SendSuccessResponse(ctx, http.StatusOK, "Tickets sold per event retrieved successfully", ticketsSoldPerEvent)
 }
+
+func (c *TicketController) CancelTicket(ctx *gin.Context) {
+	// Ambil ID tiket dari URL parameter
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid ticket ID", err)
+		return
+	}
+
+	// Panggil service untuk membatalkan tiket
+	if err := c.ticketService.CancelTicket(id); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to cancel ticket", err)
+		return
+	}
+
+	// Kirim response sukses
+	helper.SendSuccessResponse(ctx, http.StatusOK, "Ticket cancelled successfully", nil)
+}
