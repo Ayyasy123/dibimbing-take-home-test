@@ -229,3 +229,21 @@ func (c *EventController) GetEventReport(ctx *gin.Context) {
 
 	helper.SendSuccessResponse(ctx, http.StatusOK, "Event report generated successfully", report)
 }
+
+func (c *EventController) CancelEvent(ctx *gin.Context) {
+	// Ambil ID event dari URL parameter
+	eventID, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid event ID", err)
+		return
+	}
+
+	// Panggil service untuk membatalkan event
+	if err := c.eventService.CancelEvent(eventID); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to cancel event", err)
+		return
+	}
+
+	// Kirim response sukses
+	helper.SendSuccessResponse(ctx, http.StatusOK, "Event and associated tickets cancelled successfully", nil)
+}

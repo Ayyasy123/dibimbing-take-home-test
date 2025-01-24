@@ -16,6 +16,7 @@ type EventService interface {
 	DeleteEvent(id int) error
 	SearchEvents(searchQuery string, minPrice, maxPrice int, category, status string, startDate, endDate time.Time) ([]entity.EventRes, error)
 	GetEventReport(startDate, endDate time.Time) (*entity.EventReport, error)
+	CancelEvent(eventID int) error
 }
 
 type eventService struct {
@@ -171,4 +172,20 @@ func (s *eventService) GetEventReport(startDate, endDate time.Time) (*entity.Eve
 		TotalEvent:              int(totalEvent),
 		EventStatusDistribution: statusDistribution,
 	}, nil
+}
+
+func (s *eventService) CancelEvent(eventID int) error {
+	// Cek apakah event ada
+	event, err := s.eventRepository.FindEventByID(eventID)
+	if err != nil {
+		return err
+	}
+
+	// Validasi: Event hanya bisa dibatalkan jika statusnya "active" atau "upcoming"
+	if event.Status != "active" && event.Status != "upcoming" {
+		return errors.New("event cannot be cancelled because it is not in 'active' or 'upcoming' status")
+	}
+
+	// Batalkan event dan semua tiket terkait
+	return s.eventRepository.CancelEvent(eventID)
 }

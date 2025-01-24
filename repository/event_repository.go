@@ -18,6 +18,7 @@ type EventRepository interface {
 	SearchEvents(searchQuery string, minPrice, maxPrice int, category, status string, startDate, endDate time.Time) ([]entity.Event, error)
 	GetTotalEvents(startDate, endDate time.Time) (int64, error)
 	GetEventStatusDistribution(status string, startDate, endDate time.Time) (entity.EventStatusDistribution, error)
+	CancelEvent(eventID int) error
 }
 
 type eventRepository struct {
@@ -131,4 +132,26 @@ func (r *eventRepository) GetEventStatusDistribution(status string, startDate, e
 	err := query.Select("SUM(capacity) as total_capacity, SUM(capacity - available_tickets) as ticket_booked").
 		Scan(&distribution).Error
 	return distribution, err
+}
+
+func (r *eventRepository) CancelEvent(eventID int) error {
+	// Mulai transaksi database
+	tx := r.db.Begin()
+
+	// Update status event menjadi "cancelled"
+	if err := tx.Model(&entity.Event{}).Where("id = ?", eventID).
+		Update("status", "cancelled").Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Update status semua tiket terkait menjadi "cancelled"
+	if err := tx.Model(&entity.Ticket{}).Where("event_id = ?", eventID).
+		Update("status", "cancelled").Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Commit transaksi
+	return tx.Commit().Error
 }
