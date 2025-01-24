@@ -25,6 +25,7 @@ func SetupUserRoutes(db *gorm.DB, r *gin.Engine) {
 		userRoutes.GET("/:id", userController.FindUserByID)
 		userRoutes.PUT("/:id", userController.UpdateUser)
 		userRoutes.DELETE("/:id", middleware.RoleAuth("admin"), userController.DeleteUser)
+		userRoutes.GET("/report", middleware.RoleAuth("admin"), userController.GetUserReport)
 	}
 }
 
@@ -41,6 +42,8 @@ func SetupEventRoutes(db *gorm.DB, r *gin.Engine) {
 		eventRoutes.GET("/:id", eventController.FindEventByID)
 		eventRoutes.PUT("/:id", middleware.RoleAuth("admin"), eventController.UpdateEvent)
 		eventRoutes.DELETE("/:id", middleware.RoleAuth("admin"), eventController.DeleteEvent)
+		eventRoutes.GET("/search", eventController.SearchEvents)
+		eventRoutes.GET("/report", middleware.RoleAuth("admin"), eventController.GetEventReport)
 	}
 }
 
@@ -58,5 +61,7 @@ func SetupTicketRoutes(db *gorm.DB, r *gin.Engine) {
 		ticketRoutes.PUT("/:id", middleware.RoleAuth("admin"), ticketController.UpdateTicket)
 		ticketRoutes.DELETE("/:id", middleware.RoleAuth("admin"), ticketController.DeleteTicket)
 		ticketRoutes.GET("/user", ticketController.FindAllTicketsByUserID)
+		ticketRoutes.GET("/report", middleware.RoleAuth("admin"), ticketController.GetTicketSalesReport)
+		ticketRoutes.GET("/report/event", middleware.RoleAuth("admin"), ticketController.GetTicketsSoldPerEvent)
 	}
 }
