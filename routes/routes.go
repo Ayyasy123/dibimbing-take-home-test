@@ -61,6 +61,7 @@ func SetupTicketRoutes(db *gorm.DB, r *gin.Engine) {
 		ticketRoutes.PUT("/:id", middleware.RoleAuth("admin"), ticketController.UpdateTicket)
 		ticketRoutes.DELETE("/:id", middleware.RoleAuth("admin"), ticketController.DeleteTicket)
 		ticketRoutes.GET("/user", ticketController.FindAllTicketsByUserID)
+		ticketRoutes.PATCH("/:id", ticketController.CancelTicket)
 		ticketRoutes.GET("/report", middleware.RoleAuth("admin"), ticketController.GetTicketSalesReport)
 		ticketRoutes.GET("/report/event", middleware.RoleAuth("admin"), ticketController.GetTicketsSoldPerEvent)
 	}
