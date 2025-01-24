@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
 	"github.com/Ayyasy123/dibimbing-take-home-test/response"
@@ -109,4 +110,68 @@ func (c *EventController) DeleteEvent(ctx *gin.Context) {
 	}
 
 	response.SendSuccessResponse(ctx, http.StatusOK, "Event deleted successfully", nil)
+}
+
+func (c *EventController) SearchEvents(ctx *gin.Context) {
+	// TODO: Implement event search logic
+	searchQuery := ctx.Query("search")
+	minPriceStr := ctx.Query("min_price")
+	maxPriceStr := ctx.Query("max_price")
+	category := ctx.Query("category")
+	status := ctx.Query("status")
+	startDateStr := ctx.Query("start_date")
+	endDateStr := ctx.Query("end_date")
+
+	var minPrice, maxPrice int
+	var startDate, endDate time.Time
+	var err error
+
+	if minPriceStr == "" {
+		minPrice = 0
+	} else {
+		minPrice, err = strconv.Atoi(minPriceStr)
+		if err != nil {
+			response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid min_price", err)
+			return
+		}
+	}
+
+	if maxPriceStr == "" {
+		maxPrice = 100000000
+	} else {
+		maxPrice, err = strconv.Atoi(maxPriceStr)
+		if err != nil {
+			response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid max_price", err)
+			return
+		}
+	}
+
+	if minPrice > maxPrice {
+		response.SendErrorResponse(ctx, http.StatusBadRequest, "min_price must be less than or equal to max_price", nil)
+		return
+	}
+
+	if startDateStr != "" {
+		startDate, err = time.Parse("2006-01-02", startDateStr)
+		if err != nil {
+			response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid start_date", err)
+			return
+		}
+	}
+
+	if endDateStr != "" {
+		endDate, err = time.Parse("2006-01-02", endDateStr)
+		if err != nil {
+			response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid end_date", err)
+			return
+		}
+	}
+
+	eventsRes, err := c.eventService.SearchEvents(searchQuery, minPrice, maxPrice, category, status, startDate, endDate)
+	if err != nil {
+		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve events", err)
+		return
+	}
+
+	response.SendSuccessResponse(ctx, http.StatusOK, "Events retrieved successfully", eventsRes)
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"strings"
+	"time"
 
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
 	"gorm.io/gorm"
@@ -14,6 +15,7 @@ type EventRepository interface {
 	UpdateEvent(id int, event *entity.Event) error
 	DeleteEvent(id int) error
 	IsEventNameExists(name string) (bool, error)
+	SearchEvents(searchQuery string, minPrice, maxPrice int, category, status string, startDate, endDate time.Time) ([]entity.Event, error)
 }
 
 type eventRepository struct {
@@ -56,4 +58,42 @@ func (r *eventRepository) IsEventNameExists(name string) (bool, error) {
 	var count int64
 	r.db.Model(&entity.Event{}).Where("name = ?", strings.ToLower(name)).Count(&count)
 	return count > 0, nil
+}
+
+func (r *eventRepository) SearchEvents(searchQuery string, minPrice, maxPrice int, category, status string, startDate, endDate time.Time) ([]entity.Event, error) {
+	var events []entity.Event
+
+	query := r.db
+
+	if searchQuery != "" {
+		searchQuery = strings.ToLower(searchQuery)
+		query = query.Where("LOWER(name) LIKE ? OR LOWER(description) LIKE ?", "%"+searchQuery+"%", "%"+searchQuery+"%")
+	}
+
+	query = query.Where("price BETWEEN ? AND ?", minPrice, maxPrice)
+
+	if category != "" {
+		category = strings.ToLower(category)
+		query = query.Where("LOWER(category) = ?", category)
+	}
+
+	if status != "" {
+		status = strings.ToLower(status)
+		query = query.Where("LOWER(status) = ?", status)
+	}
+
+	if !startDate.IsZero() {
+		query = query.Where("date >= ?", startDate)
+	}
+
+	if !endDate.IsZero() {
+		query = query.Where("date <= ?", endDate)
+	}
+
+	err := query.Find(&events).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return events, nil
 }
