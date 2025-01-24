@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
@@ -30,7 +31,36 @@ func NewTicketRepository(db *gorm.DB) *ticketRepository {
 }
 
 func (r *ticketRepository) CreateTicket(ticket *entity.Ticket) error {
-	return r.db.Create(ticket).Error
+	// Mulai transaksi database
+	tx := r.db.Begin()
+
+	// Cek apakah event masih memiliki tiket yang tersedia
+	var event entity.Event
+	if err := tx.Model(&entity.Event{}).Where("id = ?", ticket.EventID).First(&event).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if event.AvailableTickets <= 0 {
+		tx.Rollback()
+		return errors.New("no available tickets for this event")
+	}
+
+	// Kurangi AvailableTickets pada event
+	if err := tx.Model(&entity.Event{}).Where("id = ?", ticket.EventID).
+		Update("available_tickets", event.AvailableTickets-1).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Buat tiket
+	if err := tx.Create(ticket).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Commit transaksi
+	return tx.Commit().Error
 }
 
 func (r *ticketRepository) FindTicketByID(id int) (*entity.Ticket, error) {

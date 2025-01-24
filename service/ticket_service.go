@@ -34,6 +34,9 @@ func (s *ticketService) CreateTicket(req *entity.CreateTicketReq) (*entity.Ticke
 	}
 
 	err := s.ticketRepository.CreateTicket(ticket)
+	if err != nil {
+		return nil, err
+	}
 
 	ticketRes := &entity.TicketRes{
 		ID:        ticket.ID,
