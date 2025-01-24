@@ -51,13 +51,26 @@ func (c *TicketController) FindTicketByID(ctx *gin.Context) {
 }
 
 func (c *TicketController) FindAllTickets(ctx *gin.Context) {
+	var paginationReq helper.PaginationRequest
+	if err := ctx.ShouldBindQuery(&paginationReq); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid pagination parameters", err)
+		return
+	}
+
 	ticketsRes, err := c.ticketService.FindAllTickets()
 	if err != nil {
 		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve tickets", err)
 		return
 	}
 
-	helper.SendSuccessResponse(ctx, http.StatusOK, "Tickets retrieved successfully", ticketsRes)
+	var data []interface{}
+	for _, ticket := range ticketsRes {
+		data = append(data, ticket)
+	}
+
+	paginatedResponse := helper.Paginate(data, paginationReq.Page, paginationReq.Limit)
+
+	helper.SendSuccessResponse(ctx, http.StatusOK, "Tickets retrieved successfully", paginatedResponse)
 }
 
 func (c *TicketController) UpdateTicket(ctx *gin.Context) {

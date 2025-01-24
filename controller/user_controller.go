@@ -67,13 +67,26 @@ func (c *UserController) FindUserByID(ctx *gin.Context) {
 }
 
 func (c *UserController) FindAllUsers(ctx *gin.Context) {
+	var paginationReq helper.PaginationRequest
+	if err := ctx.ShouldBindQuery(&paginationReq); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid pagination parameters", err)
+		return
+	}
+
 	usersRes, err := c.userService.FindAllUsers()
 	if err != nil {
 		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve users", err)
 		return
 	}
 
-	helper.SendSuccessResponse(ctx, http.StatusOK, "Users data retrieved successfully", usersRes)
+	var data []interface{}
+	for _, user := range usersRes {
+		data = append(data, user)
+	}
+
+	paginatedResponse := helper.Paginate(data, paginationReq.Page, paginationReq.Limit)
+
+	helper.SendSuccessResponse(ctx, http.StatusOK, "Users data retrieved successfully", paginatedResponse)
 }
 
 func (c *UserController) UpdateUser(ctx *gin.Context) {
