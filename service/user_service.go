@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"time"
 
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
 	"github.com/Ayyasy123/dibimbing-take-home-test/repository"
@@ -17,6 +18,7 @@ type UserService interface {
 	UpdateUser(id int, req *entity.UpdateUserReq) error
 	DeleteUser(id int) error
 	RegisterAsAdmin(req *entity.RegisterReq) (*entity.UserRes, error)
+	GetUserReport(startDate, endDate time.Time) (*entity.UserReport, error)
 }
 
 type userService struct {
@@ -209,4 +211,35 @@ func (s *userService) RegisterAsAdmin(req *entity.RegisterReq) (*entity.UserRes,
 	}
 
 	return userRes, nil
+}
+
+func (s *userService) GetUserReport(startDate, endDate time.Time) (*entity.UserReport, error) {
+	// Hitung total user
+	totalUser, err := s.userRepository.GetTotalUsers(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	// Daftar role user yang ingin dihitung
+	roles := []string{"admin", "user"}
+
+	// Slice untuk menyimpan distribusi role user
+	var roleDistribution []entity.UserRoleDistribution
+
+	// Loop melalui setiap role dan hitung distribusinya
+	for _, role := range roles {
+		totalRoleUser, err := s.userRepository.GetUserRoleDistribution(role, startDate, endDate)
+		if err != nil {
+			return nil, err
+		}
+		roleDistribution = append(roleDistribution, entity.UserRoleDistribution{
+			Role:      role,
+			TotalUser: int(totalRoleUser),
+		})
+	}
+
+	return &entity.UserReport{
+		TotalUser:            int(totalUser),
+		UserRoleDistribution: roleDistribution,
+	}, nil
 }

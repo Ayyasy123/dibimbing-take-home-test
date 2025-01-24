@@ -40,3 +40,13 @@ type UserRes struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	Token     string    `json:"token,omitempty"`
 }
+
+type UserRoleDistribution struct {
+	Role      string `json:"role"`       // Role user (admin, user)
+	TotalUser int    `json:"total_user"` // Total user dengan role tersebut
+}
+
+type UserReport struct {
+	TotalUser            int                    `json:"total_user"`             // Total user yang terdaftar
+	UserRoleDistribution []UserRoleDistribution `json:"user_role_distribution"` // Distribusi role user
+}

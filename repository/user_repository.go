@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
 	"gorm.io/gorm"
 )
@@ -13,6 +15,8 @@ type UserRepository interface {
 	UpdateUser(id int, user *entity.User) error
 	DeleteUser(id int) error
 	IsEmailExists(email string) (bool, error)
+	GetTotalUsers(startDate, endDate time.Time) (int64, error)
+	GetUserRoleDistribution(role string, startDate, endDate time.Time) (int64, error)
 }
 
 type userRepository struct {
@@ -61,4 +65,36 @@ func (r *userRepository) IsEmailExists(email string) (bool, error) {
 	var count int64
 	r.db.Model(&entity.User{}).Where("email = ?", email).Count(&count)
 	return count > 0, nil
+}
+
+func (r *userRepository) GetTotalUsers(startDate, endDate time.Time) (int64, error) {
+	var totalUser int64
+	query := r.db.Model(&entity.User{})
+
+	// Tambahkan filter tanggal jika startDate atau endDate tidak kosong
+	if !startDate.IsZero() {
+		query = query.Where("created_at >= ?", startDate)
+	}
+	if !endDate.IsZero() {
+		query = query.Where("created_at <= ?", endDate)
+	}
+
+	err := query.Count(&totalUser).Error
+	return totalUser, err
+}
+
+func (r *userRepository) GetUserRoleDistribution(role string, startDate, endDate time.Time) (int64, error) {
+	var totalUser int64
+	query := r.db.Model(&entity.User{}).Where("role = ?", role)
+
+	// Tambahkan filter tanggal jika startDate atau endDate tidak kosong
+	if !startDate.IsZero() {
+		query = query.Where("created_at >= ?", startDate)
+	}
+	if !endDate.IsZero() {
+		query = query.Where("created_at <= ?", endDate)
+	}
+
+	err := query.Count(&totalUser).Error
+	return totalUser, err
 }
