@@ -42,6 +42,7 @@ func SetupEventRoutes(db *gorm.DB, r *gin.Engine) {
 		eventRoutes.GET("/:id", eventController.FindEventByID)
 		eventRoutes.PUT("/:id", middleware.RoleAuth("admin"), eventController.UpdateEvent)
 		eventRoutes.DELETE("/:id", middleware.RoleAuth("admin"), eventController.DeleteEvent)
+		eventRoutes.PATCH("/:id", middleware.RoleAuth("admin"), eventController.CancelEvent)
 		eventRoutes.GET("/search", eventController.SearchEvents)
 		eventRoutes.GET("/report", middleware.RoleAuth("admin"), eventController.GetEventReport)
 	}
