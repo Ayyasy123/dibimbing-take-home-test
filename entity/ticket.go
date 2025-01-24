@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type Ticket struct {
 	ID        int       `json:"id" gorm:"primary_key,auto_increment" `
@@ -30,4 +33,28 @@ type TicketRes struct {
 	Status    string `json:"status"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
+}
+
+type TicketStatusDistribution struct {
+	Status       string `json:"status"`        // Status tiket (Dibeli, Dibatalkan)
+	TotalTickets int    `json:"total_tickets"` // Total tiket dengan status tersebut
+	TotalRevenue int    `json:"total_revenue"` // Total pendapatan dari tiket dengan status tersebut
+}
+
+type TicketReport struct {
+	TotalTickets             int                        `json:"total_tickets"`              // Total tiket yang terjual
+	TotalRevenue             int                        `json:"total_revenue"`              // Total pendapatan dari tiket yang terjual
+	TicketStatusDistribution []TicketStatusDistribution `json:"ticket_status_distribution"` // Distribusi status tiket
+}
+
+type TicketStatusDistributionResult struct {
+	TotalTickets sql.NullInt64 `gorm:"column:total_tickets" json:"total_tickets`
+	TotalRevenue sql.NullInt64 `gorm:"column:total_revenue" json:"total_revenue"`
+}
+
+type TicketsSoldPerEvent struct {
+	EventID      int    `json:"event_id"`
+	EventName    string `json:"event_name"`
+	TotalTickets int    `json:"total_tickets"`
+	TotalRevenue int    `json:"total_revenue"`
 }

@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
 	"github.com/Ayyasy123/dibimbing-take-home-test/helper"
@@ -132,4 +133,81 @@ func (c *TicketController) FindAllTicketsByUserID(ctx *gin.Context) {
 	}
 
 	helper.SendSuccessResponse(ctx, http.StatusOK, "Tickets retrieved successfully", ticketsRes)
+}
+
+func (c *TicketController) GetTicketSalesReport(ctx *gin.Context) {
+	startDateStr := ctx.Query("start_date")
+	endDateStr := ctx.Query("end_date")
+
+	var startDate, endDate time.Time
+	var err error
+
+	if startDateStr != "" {
+		startDate, err = time.Parse("2006-01-02", startDateStr)
+		if err != nil {
+			helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid start date", err)
+			return
+		}
+	}
+
+	if endDateStr != "" {
+		endDate, err = time.Parse("2006-01-02", endDateStr)
+		if err != nil {
+			helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid end date", err)
+			return
+		}
+	}
+
+	ticketsRes, err := c.ticketService.GetTicketReport(startDate, endDate)
+	if err != nil {
+		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve ticket sales report", err)
+		return
+	}
+
+	helper.SendSuccessResponse(ctx, http.StatusOK, "Ticket sales report retrieved successfully", ticketsRes)
+}
+
+func (c *TicketController) GetTicketsSoldPerEvent(ctx *gin.Context) {
+	startDateStr := ctx.Query("start_date")
+	endDateStr := ctx.Query("end_date")
+	eventIDStr := ctx.Query("event_id")
+
+	var startDate, endDate time.Time
+	var eventID int
+	var err error
+
+	// Parsing tanggal
+	if startDateStr != "" {
+		startDate, err = time.Parse("2006-01-02", startDateStr)
+		if err != nil {
+			helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid start date format. Expected format: YYYY-MM-DD", err)
+			return
+		}
+	}
+
+	if endDateStr != "" {
+		endDate, err = time.Parse("2006-01-02", endDateStr)
+		if err != nil {
+			helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid end date format. Expected format: YYYY-MM-DD", err)
+			return
+		}
+	}
+
+	// Parsing event_id
+	if eventIDStr != "" {
+		eventID, err = strconv.Atoi(eventIDStr)
+		if err != nil {
+			helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid event ID", err)
+			return
+		}
+	}
+
+	// Panggil service dengan parameter yang sesuai
+	ticketsSoldPerEvent, err := c.ticketService.GetTicketsSoldPerEvent(startDate, endDate, eventID)
+	if err != nil {
+		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve tickets sold per event", err)
+		return
+	}
+
+	helper.SendSuccessResponse(ctx, http.StatusOK, "Tickets sold per event retrieved successfully", ticketsSoldPerEvent)
 }

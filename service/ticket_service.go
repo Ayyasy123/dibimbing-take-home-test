@@ -1,6 +1,8 @@
 package service
 
 import (
+	"time"
+
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
 	"github.com/Ayyasy123/dibimbing-take-home-test/repository"
 )
@@ -12,6 +14,8 @@ type TicketService interface {
 	UpdateTicket(id int, req *entity.UpdateTicketReq) error
 	DeleteTicket(id int) error
 	FindAllTicketsByUserID(userID int) ([]entity.TicketRes, error)
+	GetTicketReport(startDate, endDate time.Time) (*entity.TicketReport, error)
+	GetTicketsSoldPerEvent(startDate, endDate time.Time, eventID int) ([]entity.TicketsSoldPerEvent, error)
 }
 
 type ticketService struct {
@@ -118,4 +122,48 @@ func (s *ticketService) FindAllTicketsByUserID(userID int) ([]entity.TicketRes, 
 	}
 
 	return ticketRes, nil
+}
+
+func (s *ticketService) GetTicketReport(startDate, endDate time.Time) (*entity.TicketReport, error) {
+	// Hitung total tiket yang terjual
+	totalTickets, err := s.ticketRepository.GetTotalTickets(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	// Hitung total pendapatan dari tiket yang terjual
+	totalRevenue, err := s.ticketRepository.GetTotalRevenue(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	// Daftar status tiket yang ingin dihitung
+	statuses := []string{"Dibeli", "Dibatalkan"}
+
+	// Slice untuk menyimpan distribusi status tiket
+	var statusDistribution []entity.TicketStatusDistribution
+
+	// Loop melalui setiap status dan hitung distribusinya
+	for _, status := range statuses {
+		totalTicketsByStatus, totalRevenueByStatus, err := s.ticketRepository.GetTicketStatusDistribution(status, startDate, endDate)
+		if err != nil {
+			return nil, err
+		}
+
+		statusDistribution = append(statusDistribution, entity.TicketStatusDistribution{
+			Status:       status,
+			TotalTickets: totalTicketsByStatus,
+			TotalRevenue: totalRevenueByStatus,
+		})
+	}
+
+	return &entity.TicketReport{
+		TotalTickets:             int(totalTickets),
+		TotalRevenue:             totalRevenue,
+		TicketStatusDistribution: statusDistribution,
+	}, nil
+}
+
+func (s *ticketService) GetTicketsSoldPerEvent(startDate, endDate time.Time, eventID int) ([]entity.TicketsSoldPerEvent, error) {
+	return s.ticketRepository.GetTicketsSoldPerEvent(startDate, endDate, eventID)
 }
