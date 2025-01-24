@@ -6,9 +6,8 @@ import (
 	"time"
 
 	"github.com/Ayyasy123/dibimbing-take-home-test/entity"
-	"github.com/Ayyasy123/dibimbing-take-home-test/response"
+	"github.com/Ayyasy123/dibimbing-take-home-test/helper"
 	"github.com/Ayyasy123/dibimbing-take-home-test/service"
-	"github.com/Ayyasy123/dibimbing-take-home-test/validator"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,93 +22,106 @@ func NewEventController(eventService service.EventService) *EventController {
 func (c *EventController) CreateEvent(ctx *gin.Context) {
 	var req entity.CreateEventReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
 	// Perform validation
-	if err := validator.ValidateStruct(&req); err != nil {
-		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+	if err := helper.ValidateStruct(&req); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
 	eventRes, err := c.eventService.CreateEvent(&req)
 	if err != nil {
-		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to create event", err)
+		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to create event", err)
 		return
 	}
 
-	response.SendSuccessResponse(ctx, http.StatusCreated, "Event created successfully", eventRes)
+	helper.SendSuccessResponse(ctx, http.StatusCreated, "Event created successfully", eventRes)
 }
 
 func (c *EventController) FindEventByID(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid event ID", err)
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid event ID", err)
 		return
 	}
 
 	eventRes, err := c.eventService.FindEventByID(id)
 	if err != nil {
-		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve event", err)
+		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve event", err)
 		return
 	}
 
-	response.SendSuccessResponse(ctx, http.StatusOK, "Event retrieved successfully", eventRes)
+	helper.SendSuccessResponse(ctx, http.StatusOK, "Event retrieved successfully", eventRes)
 }
 
 func (c *EventController) FindAllEvents(ctx *gin.Context) {
-	eventsRes, err := c.eventService.FindAllEvents()
-	if err != nil {
-		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve events", err)
+	var paginationReq helper.PaginationRequest
+	if err := ctx.ShouldBindQuery(&paginationReq); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid pagination parameters", err)
 		return
 	}
 
-	response.SendSuccessResponse(ctx, http.StatusOK, "Events retrieved successfully", eventsRes)
+	eventsRes, err := c.eventService.FindAllEvents()
+	if err != nil {
+		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve events", err)
+		return
+	}
+
+	var data []interface{}
+	for _, event := range eventsRes {
+		data = append(data, event)
+	}
+
+	paginatedResponse := helper.Paginate(data, paginationReq.Page, paginationReq.Limit)
+
+	helper.SendSuccessResponse(ctx, http.StatusOK, "Events retrieved successfully", paginatedResponse)
 }
 
 func (c *EventController) UpdateEvent(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid event ID", err)
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid event ID", err)
 		return
 	}
 
 	var req entity.UpdateEventReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
 	// Perform validation
-	if err := validator.ValidateStruct(&req); err != nil {
-		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+	if err := helper.ValidateStruct(&req); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
 	err = c.eventService.UpdateEvent(id, &req)
 	if err != nil {
-		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to update event", err)
+		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to update event", err)
 		return
 	}
 
-	response.SendSuccessResponse(ctx, http.StatusOK, "Event updated successfully", nil)
+	helper.SendSuccessResponse(ctx, http.StatusOK, "Event updated successfully", nil)
 }
 
 func (c *EventController) DeleteEvent(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid event ID", err)
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid event ID", err)
 		return
 	}
 
 	err = c.eventService.DeleteEvent(id)
 	if err != nil {
-		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to delete event", err)
+		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to delete event", err)
 		return
 	}
 
-	response.SendSuccessResponse(ctx, http.StatusOK, "Event deleted successfully", nil)
+	helper.SendSuccessResponse(ctx, http.StatusOK, "Event deleted successfully", nil)
 }
 
 func (c *EventController) SearchEvents(ctx *gin.Context) {
@@ -131,7 +143,7 @@ func (c *EventController) SearchEvents(ctx *gin.Context) {
 	} else {
 		minPrice, err = strconv.Atoi(minPriceStr)
 		if err != nil {
-			response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid min_price", err)
+			helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid min_price", err)
 			return
 		}
 	}
@@ -141,20 +153,20 @@ func (c *EventController) SearchEvents(ctx *gin.Context) {
 	} else {
 		maxPrice, err = strconv.Atoi(maxPriceStr)
 		if err != nil {
-			response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid max_price", err)
+			helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid max_price", err)
 			return
 		}
 	}
 
 	if minPrice > maxPrice {
-		response.SendErrorResponse(ctx, http.StatusBadRequest, "min_price must be less than or equal to max_price", nil)
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "min_price must be less than or equal to max_price", nil)
 		return
 	}
 
 	if startDateStr != "" {
 		startDate, err = time.Parse("2006-01-02", startDateStr)
 		if err != nil {
-			response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid start_date", err)
+			helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid start_date", err)
 			return
 		}
 	}
@@ -162,16 +174,16 @@ func (c *EventController) SearchEvents(ctx *gin.Context) {
 	if endDateStr != "" {
 		endDate, err = time.Parse("2006-01-02", endDateStr)
 		if err != nil {
-			response.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid end_date", err)
+			helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid end_date", err)
 			return
 		}
 	}
 
 	eventsRes, err := c.eventService.SearchEvents(searchQuery, minPrice, maxPrice, category, status, startDate, endDate)
 	if err != nil {
-		response.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve events", err)
+		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve events", err)
 		return
 	}
 
-	response.SendSuccessResponse(ctx, http.StatusOK, "Events retrieved successfully", eventsRes)
+	helper.SendSuccessResponse(ctx, http.StatusOK, "Events retrieved successfully", eventsRes)
 }
