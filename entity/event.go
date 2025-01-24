@@ -57,3 +57,14 @@ type EventRes struct {
 	CreatedAt          string `json:"created_at"`
 	UpdatedAt          string `json:"updated_at"`
 }
+
+type EventStatusDistribution struct {
+	EventStatus   string `json:"event_status"`   // Status event (Aktif, Berlangsung, Selesai, Dibatalkan)
+	TotalCapacity int    `json:"total_capacity"` // Total kapasitas event dengan status tersebut
+	TicketBooked  int    `json:"ticket_booked"`  // Total tiket yang sudah dipesan
+}
+
+type EventReport struct {
+	TotalEvent              int                       `json:"total_event"`               // Total event yang tersedia
+	EventStatusDistribution []EventStatusDistribution `json:"event_status_distribution"` // Distribusi status event
+}

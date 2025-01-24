@@ -187,3 +187,45 @@ func (c *EventController) SearchEvents(ctx *gin.Context) {
 
 	helper.SendSuccessResponse(ctx, http.StatusOK, "Events retrieved successfully", eventsRes)
 }
+
+func (c *EventController) GetEventReport(ctx *gin.Context) {
+	// Ambil start_date dan end_date dari query string (opsional)
+	startDateStr := ctx.Query("start_date")
+	endDateStr := ctx.Query("end_date")
+
+	var startDate, endDate time.Time
+	var err error
+
+	// Parse start_date jika ada
+	if startDateStr != "" {
+		startDate, err = time.Parse("2006-01-02", startDateStr)
+		if err != nil {
+			helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid start_date format (YYYY-MM-DD)", err)
+			return
+		}
+	}
+
+	// Parse end_date jika ada
+	if endDateStr != "" {
+		endDate, err = time.Parse("2006-01-02", endDateStr)
+		if err != nil {
+			helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid end_date format (YYYY-MM-DD)", err)
+			return
+		}
+	}
+
+	// Pastikan start_date tidak lebih besar dari end_date jika keduanya ada
+	if !startDate.IsZero() && !endDate.IsZero() && startDate.After(endDate) {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "start_date must be before or equal to end_date", nil)
+		return
+	}
+
+	// Panggil service untuk menghasilkan laporan
+	report, err := c.eventService.GetEventReport(startDate, endDate)
+	if err != nil {
+		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to generate event report", err)
+		return
+	}
+
+	helper.SendSuccessResponse(ctx, http.StatusOK, "Event report generated successfully", report)
+}

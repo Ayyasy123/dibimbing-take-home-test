@@ -15,6 +15,7 @@ type EventService interface {
 	UpdateEvent(id int, req *entity.UpdateEventReq) error
 	DeleteEvent(id int) error
 	SearchEvents(searchQuery string, minPrice, maxPrice int, category, status string, startDate, endDate time.Time) ([]entity.EventRes, error)
+	GetEventReport(startDate, endDate time.Time) (*entity.EventReport, error)
 }
 
 type eventService struct {
@@ -141,4 +142,33 @@ func (s *eventService) SearchEvents(searchQuery string, minPrice, maxPrice int, 
 	}
 
 	return eventRes, nil
+}
+
+func (s *eventService) GetEventReport(startDate, endDate time.Time) (*entity.EventReport, error) {
+	// Hitung total event
+	totalEvent, err := s.eventRepository.GetTotalEvents(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	// Daftar status event yang ingin dihitung
+	statuses := []string{"Aktif", "Berlangsung", "Selesai", "Dibatalkan"}
+
+	// Slice untuk menyimpan distribusi status event
+	var statusDistribution []entity.EventStatusDistribution
+
+	// Loop melalui setiap status dan hitung distribusinya
+	for _, status := range statuses {
+		distribution, err := s.eventRepository.GetEventStatusDistribution(status, startDate, endDate)
+		if err != nil {
+			return nil, err
+		}
+		distribution.EventStatus = status
+		statusDistribution = append(statusDistribution, distribution)
+	}
+
+	return &entity.EventReport{
+		TotalEvent:              int(totalEvent),
+		EventStatusDistribution: statusDistribution,
+	}, nil
 }

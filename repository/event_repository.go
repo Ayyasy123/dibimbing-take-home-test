@@ -16,6 +16,8 @@ type EventRepository interface {
 	DeleteEvent(id int) error
 	IsEventNameExists(name string) (bool, error)
 	SearchEvents(searchQuery string, minPrice, maxPrice int, category, status string, startDate, endDate time.Time) ([]entity.Event, error)
+	GetTotalEvents(startDate, endDate time.Time) (int64, error)
+	GetEventStatusDistribution(status string, startDate, endDate time.Time) (entity.EventStatusDistribution, error)
 }
 
 type eventRepository struct {
@@ -96,4 +98,37 @@ func (r *eventRepository) SearchEvents(searchQuery string, minPrice, maxPrice in
 	}
 
 	return events, nil
+}
+
+func (r *eventRepository) GetTotalEvents(startDate, endDate time.Time) (int64, error) {
+	var totalEvent int64
+	query := r.db.Model(&entity.Event{})
+
+	// Tambahkan filter tanggal jika startDate atau endDate tidak kosong
+	if !startDate.IsZero() {
+		query = query.Where("date >= ?", startDate)
+	}
+	if !endDate.IsZero() {
+		query = query.Where("date <= ?", endDate)
+	}
+
+	err := query.Count(&totalEvent).Error
+	return totalEvent, err
+}
+
+func (r *eventRepository) GetEventStatusDistribution(status string, startDate, endDate time.Time) (entity.EventStatusDistribution, error) {
+	var distribution entity.EventStatusDistribution
+	query := r.db.Model(&entity.Event{}).Where("status = ?", status)
+
+	// Tambahkan filter tanggal jika startDate atau endDate tidak kosong
+	if !startDate.IsZero() {
+		query = query.Where("date >= ?", startDate)
+	}
+	if !endDate.IsZero() {
+		query = query.Where("date <= ?", endDate)
+	}
+
+	err := query.Select("SUM(capacity) as total_capacity, SUM(capacity - available_tickets) as ticket_booked").
+		Scan(&distribution).Error
+	return distribution, err
 }
