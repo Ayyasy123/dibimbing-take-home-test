@@ -48,10 +48,20 @@ func (r *ticketRepository) CreateTicket(ticket *entity.Ticket) error {
 	}
 
 	// Kurangi AvailableTickets pada event
+	newAvailableTickets := event.AvailableTickets - 1
 	if err := tx.Model(&entity.Event{}).Where("id = ?", ticket.EventID).
-		Update("available_tickets", event.AvailableTickets-1).Error; err != nil {
+		Update("available_tickets", newAvailableTickets).Error; err != nil {
 		tx.Rollback()
 		return err
+	}
+
+	// Jika AvailableTickets menjadi 0, update status event menjadi "habis"
+	if newAvailableTickets == 0 {
+		if err := tx.Model(&entity.Event{}).Where("id = ?", ticket.EventID).
+			Update("status", "Habis").Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
 
 	// Buat tiket
