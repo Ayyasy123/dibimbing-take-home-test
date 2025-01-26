@@ -17,9 +17,9 @@ CREATE TABLE `event` (
   `category` array,
   `capacity` int,
   `price` varchar(255),
-  `status` ENUM ('Active', 'Ongoing', 'Completed', 'Canceled'),
+  `status` ENUM ("Aktif", "Berlangsung", "Selesai", "Dibatalkan"),
   `available_tickets` int,
-  `ticket_availability` ENUM ('Available', 'Sold Out'),
+  `ticket_availability` ENUM ('Tersedia', 'Habis'),
   `created_at` timestamp,
   `updated_at` timestamp
 );
@@ -28,7 +28,7 @@ CREATE TABLE `ticket` (
   `id` int PRIMARY KEY,
   `user_id` int,
   `event_id` int,
-  `status` ENUM ('Purchased', 'Canceled'),
+  `status` ENUM ('Dibeli', 'Dibatalkan'),
   `created_at` timestamp,
   `updated_at` timestamp
 );
