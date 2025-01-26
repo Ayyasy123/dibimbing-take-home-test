@@ -26,6 +26,12 @@ func (c *TicketController) CreateTicket(ctx *gin.Context) {
 		return
 	}
 
+	// Perform validation
+	if err := helper.ValidateStruct(&req); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
 	ticketRes, err := c.ticketService.CreateTicket(&req)
 	if err != nil {
 		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to create ticket", err)
@@ -83,6 +89,12 @@ func (c *TicketController) UpdateTicket(ctx *gin.Context) {
 
 	var req entity.UpdateTicketReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	// Perform validation
+	if err := helper.ValidateStruct(&req); err != nil {
 		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}

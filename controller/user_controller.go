@@ -26,6 +26,12 @@ func (c *UserController) RegisterUser(ctx *gin.Context) {
 		return
 	}
 
+	// Perform validation
+	if err := helper.ValidateStruct(&req); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
 	user, err := c.userService.RegisterUser(&req)
 	if err != nil {
 		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to register user", err)
@@ -38,6 +44,12 @@ func (c *UserController) RegisterUser(ctx *gin.Context) {
 func (c *UserController) LoginUser(ctx *gin.Context) {
 	var req entity.LoginReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	// Perform validation
+	if err := helper.ValidateStruct(&req); err != nil {
 		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
@@ -103,6 +115,12 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
+	// Perform validation
+	if err := helper.ValidateStruct(&req); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
 	err = c.userService.UpdateUser(id, &req)
 	if err != nil {
 		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to update user", err)
@@ -131,6 +149,12 @@ func (c *UserController) DeleteUser(ctx *gin.Context) {
 func (c *UserController) RegisterAsAdmin(ctx *gin.Context) {
 	var req entity.RegisterReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	// Perform validation
+	if err := helper.ValidateStruct(&req); err != nil {
 		helper.SendErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
