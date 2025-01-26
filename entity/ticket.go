@@ -17,9 +17,9 @@ type Ticket struct {
 }
 
 type CreateTicketReq struct {
-	EventID int    `json:"event_id" validate:"required"`
-	UserID  int    `json:"user_id" validate:"required"`
-	Status  string `json:"status" validate:"required"`
+	EventID int `json:"event_id" validate:"required"`
+	UserID  int `json:"user_id" validate:"required"`
+	// Status  string `json:"status" validate:"required"`
 }
 
 type UpdateTicketReq struct {
