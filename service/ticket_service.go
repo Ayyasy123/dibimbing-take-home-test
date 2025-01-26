@@ -186,5 +186,5 @@ func (s *ticketService) CancelTicket(id int) error {
 	}
 
 	// Update status tiket menjadi "cancelled"
-	return s.ticketRepository.UpdateTicketStatus(id, "cancelled")
+	return s.ticketRepository.UpdateTicketStatus(id, "Dibatalkan")
 }

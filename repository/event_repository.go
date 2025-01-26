@@ -140,14 +140,14 @@ func (r *eventRepository) CancelEvent(eventID int) error {
 
 	// Update status event menjadi "cancelled"
 	if err := tx.Model(&entity.Event{}).Where("id = ?", eventID).
-		Update("status", "cancelled").Error; err != nil {
+		Update("status", "Dibatalkan").Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
 	// Update status semua tiket terkait menjadi "cancelled"
 	if err := tx.Model(&entity.Ticket{}).Where("event_id = ?", eventID).
-		Update("status", "cancelled").Error; err != nil {
+		Update("status", "Dibatalkan").Error; err != nil {
 		tx.Rollback()
 		return err
 	}
