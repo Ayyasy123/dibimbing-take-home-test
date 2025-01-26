@@ -64,6 +64,14 @@ func (c *TicketController) FindAllTickets(ctx *gin.Context) {
 		return
 	}
 
+	// Set default values if page or limit is not provided
+	if paginationReq.Page == 0 {
+		paginationReq.Page = 1 // Default page is 1
+	}
+	if paginationReq.Limit == 0 {
+		paginationReq.Limit = 10 // Default limit is 10
+	}
+
 	ticketsRes, err := c.ticketService.FindAllTickets()
 	if err != nil {
 		helper.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to retrieve tickets", err)
